@@ -1,0 +1,43 @@
+
+body{
+  background-color: rgb(151, 219, 230);
+}
+.title-box{
+    display: flex;
+    flex-direction: column;
+    margin-top: 50px;
+    align-items: center;
+    height: 340px;
+}
+.title-box div{
+margin: 10px;
+display: flex;
+color: aliceblue;
+justify-content: center;
+align-items: center;
+}
+
+.title-box .title p{
+
+    font-size: 130px;
+    color: aliceblue;
+    padding-bottom: 100px;
+    font-weight: 300;
+     background: linear-gradient(190deg, #ffffff, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+//text-shadow: rgba(rgb(148, 108, 108), green, blue, alpha) 0px 0px 10px;
+ animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+
+}
