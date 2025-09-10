@@ -18,15 +18,12 @@ const LavenderChat = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contents: geminiHistory })
     };
-    try {
       const response = await fetch(import.meta.env.VITE_API_KEY, res);
       const text = await response.text();
       const data = text ? JSON.parse(text) : {};
       if (!response.ok) throw new Error(data.error?.message || "Something went wrong");
-      console.log(data);
-    } catch (err) {
-      console.log(err.message);
-    }
+      // Gemini's response structure: data.candidates[0].content.parts[0].text
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
   }
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
@@ -35,15 +32,38 @@ const LavenderChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
-    setMessages([...messages, { sender: 'user', text: input }]);
-    setTimeout(() => {
-      setMessages(msgs => [...msgs, { sender: 'bot', text: "Thinking...." }]);
-        genBresponse([...messages, { sender: "user", text: input }]);
-    }, 700);
-   
+    const updatedMessages = [...messages, { sender: 'user', text: input }];
+    setMessages(updatedMessages);
+
+    // Add a placeholder bot message
+    setMessages(msgs => [...msgs, { sender: 'bot', text: "Thinking...." }]);
     setInput('');
+
+    // Get the bot response
+    try {
+      const reply = await genBresponse(updatedMessages);
+      setMessages(msgs => {
+        // Replace the last "Thinking...." bot message with the real reply
+        const msgsCopy = [...msgs];
+        const lastBotIdx = msgsCopy.map(m => m.sender).lastIndexOf('bot');
+        if (lastBotIdx !== -1) {
+          msgsCopy[lastBotIdx] = { sender: 'bot', text: reply };
+        }
+        return msgsCopy;
+      });
+    } catch (err) {
+      setMessages(msgs => {
+        // Replace with error message
+        const msgsCopy = [...msgs];
+        const lastBotIdx = msgsCopy.map(m => m.sender).lastIndexOf('bot');
+        if (lastBotIdx !== -1) {
+          msgsCopy[lastBotIdx] = { sender: 'bot', text: "Sorry, I couldn't get a response." };
+        }
+        return msgsCopy;
+      });
+    }
   };
 
   const handleKeyDown = (e) => {
